@@ -39,7 +39,7 @@ HELP
 exit 0
 fi
 
-VERSION="0.2"
+VERSION="0.4"
 XRAY_DIR=/usr/local/etc/xray
 XRAY_CONF=$XRAY_DIR/config.json
 XRAY_USER=xray-vpn
@@ -215,6 +215,8 @@ ok "Ключи Reality, UUID для «$CLIENT_NAME»"
 # Проверка сайта для Reality НАСТОЯЩИМ рукопожатием: поднимаем на локальном порту временный сервер с этими же
 # ключами и клиента к нему. Проверка через openssl не годится: сайт может отвечать по TLS 1.3, а Reality
 # всё равно не сможет скопировать его рукопожатие (так было с www.microsoft.com из Сингапура).
+# Ждём, пока временный xray начнёт слушать порт (до 5 с), вместо фиксированной паузы.
+wait_port() { local i; for i in $(seq 1 50); do ss -Hltn "sport = :$1" 2>/dev/null | grep -q . && return 0; sleep 0.1; done; return 1; }
 reality_ok() {
   local t="$1" sport cport sp cp out
   sport=$(( (RANDOM % 10000) + 40000 )); cport=$(( sport + 1 ))
@@ -233,9 +235,9 @@ reality_ok() {
       streamSettings:{network:"tcp",security:"reality",
         realitySettings:{serverName:$t,fingerprint:"chrome",publicKey:$pub,shortId:$sid}}}]}' > "$WORK/t_client.json"
   xray run -c "$WORK/t_server.json" >/dev/null 2>&1 & sp=$!
-  sleep 1
+  wait_port "$sport" || true
   xray run -c "$WORK/t_client.json" >/dev/null 2>&1 & cp=$!
-  sleep 1
+  wait_port "$cport" || true
   out=$(curl -s -m 10 --socks5-hostname "127.0.0.1:$cport" https://api.ipify.org 2>/dev/null || true)
   kill "$sp" "$cp" 2>/dev/null; wait "$sp" "$cp" 2>/dev/null || true
   [ -n "$out" ]
@@ -471,7 +473,8 @@ echo
 echo "${C_GRN}${C_BLD}================  VPN ГОТОВ  ================${C_RST}"
 echo
 echo "  Приложения:  iPhone — V2Box, Happ, Streisand (бесплатные) или Shadowrocket"
-echo "               Android — Hiddify или v2rayNG;  Windows и Mac — Hiddify"
+echo "               Android — Hiddify или v2rayNG"
+echo "               Mac — Happ, V2Box, Hiddify, Shadowrocket;  Windows — Happ, Hiddify, v2rayN"
 echo "  В приложении: «+» → «Добавить из буфера» (вставить ссылку) или сканировать QR."
 echo
 echo "  Если хостер даёт свой облачный файрвол (панель хостера), откройте там TCP $VPN_PORT."

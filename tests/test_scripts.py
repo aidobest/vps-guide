@@ -81,8 +81,11 @@ def reset(names=('first',)):
 def names(): return [x['email'] for x in json.loads(conf.read_text())['inbounds'][0]['settings']['clients']]
 def run(name,arg=None,extra=None):
  return subprocess.run(['/bin/bash',str(base/name)]+([arg] if arg else []),env=env|(extra or {}),text=True,capture_output=True,timeout=15)
+FAILED=[]
 def check(cond,label,detail=''):
- if not cond: raise AssertionError(label+' '+detail)
+ # Не останавливаемся на первой ошибке: собираем все и падаем в конце.
+ if not cond:
+  FAILED.append(label); print('FAIL',label,detail[:500]); return
  print('PASS',label)
 reset(); r=run('vpn-add','second'); check(r.returncode==0 and names()==['first','second'],'add client',r.stderr)
 u=json.loads(conf.read_text())['inbounds'][0]['settings']['clients'][1]['id']
@@ -168,5 +171,25 @@ for value,want in ((None,True),('1',True),('0',False)):
 for p in (SCRIPTS/'harden.sh',SCRIPTS/'vpn-setup.sh'):
  r=subprocess.run(['/bin/bash',str(p),'--help'],capture_output=True,text=True)
  check(r.returncode==0 and 'Использование' in r.stdout,'help '+p.name,r.stderr)
+# Проверка формата публичного ключа (harden.sh: pubkeys_ok) на отдельных строках.
+fn=re.search(r"pubkeys_ok\(\) \{.*?\n\}", (SCRIPTS/'harden.sh').read_text(), re.S).group(0)
+kd=pathlib.Path(tempfile.mkdtemp(prefix='keys-',dir=base))
+subprocess.run(['ssh-keygen','-q','-t','ed25519','-N','','-C','me@test','-f',str(kd/'k')],check=True)
+pub=(kd/'k.pub').read_text().strip(); priv=(kd/'k').read_text()
+cases={
+ 'public key':(pub,True),
+ 'two public keys':(pub+'\n'+pub.replace('me@test','other'),True),
+ 'hoster options before key':('no-port-forwarding,command="echo \'Please login as ubuntu\'" '+pub,True),
+ 'private key':(priv,False),
+ 'public + private':(pub+'\n'+priv,False),
+ 'garbage':('hello world',False),
+ 'empty':('',False),
+}
+for label,(text,want) in cases.items():
+ f=kd/'in'; f.write_text(text+'\n')
+ r=subprocess.run(['/bin/bash','-c',fn+'\npubkeys_ok "$1"','x',str(f)],capture_output=True,text=True)
+ check((r.returncode==0)==want,'pubkeys_ok '+label,r.stderr)
+if FAILED:
+ print(f'FAILED {len(FAILED)}:',', '.join(FAILED)); fixture.cleanup(); sys.exit(1)
 print('ALL CHECKS PASSED. These are mocked service tests, not a real VPS deployment.')
 fixture.cleanup()

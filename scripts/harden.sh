@@ -38,7 +38,7 @@ HELP
 exit 0
 fi
 
-VERSION="0.2"
+VERSION="0.4"
 LOG=/var/log/vps-harden.log
 ROLLBACK_MINUTES=20
 BACKUP_DIR="/root/vps-harden-backup-$(date +%Y%m%d-%H%M%S)"
@@ -109,6 +109,14 @@ fi
 step "Параметры"
 
 valid_user() { [[ "$1" =~ ^[a-z_][a-z0-9_-]{0,31}$ ]] && [ "$1" != root ]; }
+# Только публичные ключи: ssh-keygen -l принимает и приватный ключ, поэтому проверяем формат строк.
+# Перед типом ключа допускаются опции authorized_keys (их иногда ставит хостер у root).
+pubkeys_ok() {
+  local f="$1"
+  grep -q 'PRIVATE KEY' "$f" && return 1
+  grep -vE '^[[:space:]]*(#|$)' "$f" | grep -qvE '(^|[[:space:],"])(ssh-(ed25519|rsa|dss)|ecdsa-sha2-nistp(256|384|521)|sk-ssh-ed25519@openssh\.com|sk-ecdsa-sha2-nistp256@openssh\.com)[[:space:]]+AAAA[A-Za-z0-9+/]+={0,3}([[:space:]]|$)' && return 1
+  grep -qvE '^[[:space:]]*(#|$)' "$f"
+}
 NEW_USER="${NEW_USER:-}"
 while ! valid_user "$NEW_USER"; do
   [ -n "$NEW_USER" ] && warn "«$NEW_USER» не годится: строчные латинские буквы, цифры, - и _, не root"
@@ -146,7 +154,7 @@ while [ -z "$SSH_PUBKEY" ]; do
   read -r -p "    Ключ: " SSH_PUBKEY
 done
 TMPKEY=$(mktemp); printf '%s\n' "$SSH_PUBKEY" > "$TMPKEY"
-if ! ssh-keygen -l -f "$TMPKEY" >/dev/null 2>&1; then
+if ! ssh-keygen -l -f "$TMPKEY" >/dev/null 2>&1 || ! pubkeys_ok "$TMPKEY"; then
   rm -f "$TMPKEY"; die "Это не похоже на публичный SSH-ключ. Нужна строка вида: ssh-ed25519 AAAAC3... comment"
 fi
 rm -f "$TMPKEY"
@@ -379,7 +387,6 @@ AddressFamily any
 PermitRootLogin no
 PasswordAuthentication no
 KbdInteractiveAuthentication no
-ChallengeResponseAuthentication no
 PubkeyAuthentication yes
 AuthenticationMethods publickey
 AllowUsers $NEW_USER
