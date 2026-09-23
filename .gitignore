@@ -1,0 +1,10 @@
+# Публикуем только явно перечисленное, всё остальное остаётся локально
+/*
+!/.gitignore
+!/README.md
+!/LICENSE
+!/scripts/
+!/client-configs/
+!/tests/
+.DS_Store
+__pycache__/
