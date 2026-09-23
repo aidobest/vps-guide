@@ -36,7 +36,7 @@
 Под root на сервере:
 
 ```
-curl -fsSL https://raw.githubusercontent.com/aidobest/vps-guide/v0.1/scripts/harden.sh -o harden.sh
+curl -fsSL https://raw.githubusercontent.com/aidobest/vps-guide/v0.2/scripts/harden.sh -o harden.sh
 bash harden.sh
 ```
 
@@ -49,7 +49,7 @@ bash harden.sh
 Под своим пользователем (не root) на сервере:
 
 ```
-curl -fsSL https://raw.githubusercontent.com/aidobest/vps-guide/v0.1/scripts/vpn-setup.sh -o vpn-setup.sh
+curl -fsSL https://raw.githubusercontent.com/aidobest/vps-guide/v0.2/scripts/vpn-setup.sh -o vpn-setup.sh
 sudo bash vpn-setup.sh
 ```
 
@@ -62,7 +62,7 @@ sudo bash vpn-setup.sh
 В Shadowrocket: **Config** → «+» → вставить адрес → **Download** → **Use Config**:
 
 ```
-https://raw.githubusercontent.com/aidobest/vps-guide/v0.1/client-configs/shadowrocket-ru.conf
+https://raw.githubusercontent.com/aidobest/vps-guide/v0.2/client-configs/shadowrocket-ru.conf
 ```
 
 ## Почему `curl -o`, а не `curl | bash`

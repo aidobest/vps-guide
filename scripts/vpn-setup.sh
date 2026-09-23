@@ -39,7 +39,7 @@ HELP
 exit 0
 fi
 
-VERSION="2.1"
+VERSION="0.2"
 XRAY_DIR=/usr/local/etc/xray
 XRAY_CONF=$XRAY_DIR/config.json
 XRAY_USER=xray-vpn
@@ -175,7 +175,14 @@ if [ ! -x /usr/local/bin/xray ]; then
     "https://raw.githubusercontent.com/XTLS/Xray-install/$INSTALLER_REF/install-release.sh" -o "$WORK/installer.sh"
   bash -n "$WORK/installer.sh"
   # Не передаём установщику переменные альтернативных путей конфигурации.
-  env -u JSON_PATH -u JSONS_PATH -u DAT_PATH bash "$WORK/installer.sh" install -u "$XRAY_USER"
+  # Вывод установщика — только в лог: его «Failed to enable and start» до появления конфига
+  # нормален (сервис запускаем на шаге 5), но пугает. При ошибке показываем хвост.
+  echo "    Официальный установщик XTLS, подробности в $LOG"
+  if ! env -u JSON_PATH -u JSONS_PATH -u DAT_PATH bash "$WORK/installer.sh" install -u "$XRAY_USER" \
+       >>"$LOG" 2>&1 </dev/null; then
+    tail -n 20 "$LOG" >&2
+    die "Установщик Xray завершился с ошибкой"
+  fi
 fi
 [ -x /usr/local/bin/xray ] || die "Xray не установлен"
 ok "$(xray version | sed -n '1p')"
@@ -463,8 +470,8 @@ sysctl net.ipv4.tcp_congestion_control | grep -q bbr && ok "BBR включён" 
 echo
 echo "${C_GRN}${C_BLD}================  VPN ГОТОВ  ================${C_RST}"
 echo
-echo "  Приложения: Hiddify (iPhone / Android / Windows / Mac) — бесплатное, открытое."
-echo "  Также подходят: v2rayNG (Android), Streisand и Happ (iPhone), v2rayN (Windows)."
+echo "  Приложения:  iPhone — V2Box, Happ, Streisand (бесплатные) или Shadowrocket"
+echo "               Android — Hiddify или v2rayNG;  Windows и Mac — Hiddify"
 echo "  В приложении: «+» → «Добавить из буфера» (вставить ссылку) или сканировать QR."
 echo
 echo "  Если хостер даёт свой облачный файрвол (панель хостера), откройте там TCP $VPN_PORT."

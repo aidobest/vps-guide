@@ -38,7 +38,7 @@ HELP
 exit 0
 fi
 
-VERSION="2.1"
+VERSION="0.2"
 LOG=/var/log/vps-harden.log
 ROLLBACK_MINUTES=20
 BACKUP_DIR="/root/vps-harden-backup-$(date +%Y%m%d-%H%M%S)"
@@ -85,7 +85,10 @@ trap finish EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM HUP
 touch "$LOG"; chmod 600 "$LOG"
+# 3/4 — исходный терминал: в конце через них печатаются пароль и порт, мимо лога.
+exec 3>&1 4>&2
 exec > >(tee -a "$LOG") 2>&1
+TEE_PID=$!
 echo "----- harden.sh v$VERSION  $(date -Is) -----"
 
 # ---------- проверки ----------
@@ -326,7 +329,8 @@ fi
 rm -f /var/lib/vps-harden/pending
 systemctl disable --now vps-harden-rollback.timer >/dev/null
 echo "\$(date -Is) CONFIRMED by \${SUDO_USER:-root}" >> "$LOG"
-echo "Подтверждено. SSH: ssh -p $SSH_PORT $NEW_USER@$PUBLIC_IP"
+echo "Подтверждено. Порт 22 закрыт, страховка снята."
+echo "Вход: ssh -p $SSH_PORT $NEW_USER@$PUBLIC_IP"
 EOF
 chmod 755 /usr/local/sbin/vps-confirm
 cat > /etc/systemd/system/vps-harden-rollback.service <<'EOF'
@@ -556,7 +560,7 @@ echo "  2. Если вошли — выполните там:"
 echo
 echo "       ${C_BLD}sudo vps-confirm${C_RST}"
 echo
-echo "     Используйте пароль sudo из /root/vps-access.txt. Это снимет страховку."
+echo "     Спросит пароль sudo (он ниже). Это снимет страховку."
 echo
 echo "  3. После подтверждения перезагрузите сервер, чтобы обновления вступили в силу:"
 echo
@@ -565,10 +569,20 @@ echo
 echo "  Если за $ROLLBACK_MINUTES минут подтверждения не будет — SSH и файрвол сами вернутся"
 echo "  к сохранённым настройкам. Пакеты и созданный пользователь не удаляются."
 echo
-[ "$HAVE_TTY" = 1 ] || echo "  Данные для входа (пароль sudo, порт): sudo cat $ACCESS_FILE"
-echo "Пароль сохранён только в $ACCESS_FILE (sudo cat $ACCESS_FILE)."
-tty_only "${C_YEL}  ЗАПИШИТЕ (лежит и в $ACCESS_FILE, читать: sudo cat $ACCESS_FILE):${C_RST}"
-tty_only "    пользователь: ${C_BLD}$NEW_USER${C_RST}"
-tty_only "    пароль sudo:  ${C_BLD}$USER_PASS${C_RST}"
-tty_only "    порт SSH:     ${C_BLD}$SSH_PORT${C_RST}"
-echo
+if [ "$HAVE_TTY" = 1 ]; then
+  # Отключаемся от tee и ждём, пока он допишет, иначе блок с паролем обгонит текст выше.
+  exec >&3 2>&4
+  for _ in $(seq 1 30); do kill -0 "$TEE_PID" 2>/dev/null || break; sleep 0.1; done
+  tty_only "${C_YEL}${C_BLD}  СОХРАНИТЕ СЕЙЧАС в менеджер паролей или защищённую заметку:${C_RST}"
+  tty_only ""
+  tty_only "    пользователь: ${C_BLD}$NEW_USER${C_RST}"
+  tty_only "    пароль sudo:  ${C_BLD}$USER_PASS${C_RST}"
+  tty_only "    порт SSH:     ${C_BLD}$SSH_PORT${C_RST}"
+  tty_only ""
+  tty_only "${C_YEL}  Без пароля не будет работать sudo: ни подтверждение, ни VPN, ни обновления.${C_RST}"
+  tty_only "  Копия в $ACCESS_FILE, но прочитать её можно только через тот же sudo."
+  tty_only ""
+else
+  echo "  Данные для входа (пароль sudo, порт): sudo cat $ACCESS_FILE"
+  echo
+fi
