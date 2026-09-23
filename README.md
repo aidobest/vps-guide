@@ -6,7 +6,7 @@
 |---|---|
 | `scripts/harden.sh` | Первичная защита сервера: отдельный пользователь с sudo, вход только по ключу, SSH на другом порту, файрвол, fail2ban, автообновления безопасности |
 | `scripts/vpn-setup.sh` | Личный VPN на Xray (VLESS + Reality, порт 443) без панели управления. Команды `vpn-add`, `vpn-del`, `vpn-list`, `vpn-show` |
-| `client-configs/shadowrocket-ru.conf` | Правила для Shadowrocket: российские сайты напрямую, остальное через свой сервер |
+| `client-configs/shadowrocket-*.conf` | Правила для Shadowrocket: своя страна напрямую, остальное через свой сервер (13 стран и вариант без разделения) |
 
 Скрипты рассчитаны на отдельный свежий сервер. На сервер, где уже что-то работает, их лучше не запускать.
 
@@ -36,7 +36,7 @@
 Под root на сервере:
 
 ```
-curl -fsSL https://raw.githubusercontent.com/aidobest/vps-guide/v0.2/scripts/harden.sh -o harden.sh
+curl -fsSL https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/scripts/harden.sh -o harden.sh
 bash harden.sh
 ```
 
@@ -49,7 +49,7 @@ bash harden.sh
 Под своим пользователем (не root) на сервере:
 
 ```
-curl -fsSL https://raw.githubusercontent.com/aidobest/vps-guide/v0.2/scripts/vpn-setup.sh -o vpn-setup.sh
+curl -fsSL https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/scripts/vpn-setup.sh -o vpn-setup.sh
 sudo bash vpn-setup.sh
 ```
 
@@ -57,13 +57,30 @@ sudo bash vpn-setup.sh
 
 Приложения: iPhone — V2Box, Happ, Streisand, Shadowrocket; Android — Hiddify, v2rayNG; Windows и Mac — Hiddify.
 
-## Правила для Shadowrocket
+## Своя страна напрямую (Shadowrocket)
 
-В Shadowrocket: **Config** → «+» → вставить адрес → **Download** → **Use Config**:
+Сайты и адреса вашей страны идут напрямую, остальное через свой сервер. Местные банки и сервисы видят обычный адрес, а локальный трафик не делает крюк.
 
-```
-https://raw.githubusercontent.com/aidobest/vps-guide/v0.2/client-configs/shadowrocket-ru.conf
-```
+В Shadowrocket: **Config** → «+» → вставить адрес файла своей страны → **Download** → **Use Config**, затем **Home** → **Global Routing** → **Config**.
+
+| Страна | Адрес файла |
+|---|---|
+| Азербайджан | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-az.conf` |
+| Армения | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-am.conf` |
+| Германия | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-de.conf` |
+| Грузия | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-ge.conf` |
+| Израиль | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-il.conf` |
+| Казахстан | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-kz.conf` |
+| Кипр | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-cy.conf` |
+| Кыргызстан | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-kg.conf` |
+| Россия | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-ru.conf` |
+| Сербия | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-rs.conf` |
+| Таиланд | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-th.conf` |
+| Турция | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-tr.conf` |
+| Узбекистан | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-uz.conf` |
+| Без разделения, всё через сервер | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-all.conf` |
+
+В каждом файле национальные домены страны и её адреса по базе GeoIP. В некоторых файлах дополнительно крупные местные сервисы на зарубежных доменах. Файлы собирает `client-configs/make-configs.py`.
 
 ## Почему `curl -o`, а не `curl | bash`
 
