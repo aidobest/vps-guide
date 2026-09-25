@@ -100,6 +100,9 @@ case "${ID:-}:${VERSION_ID:-}" in
 esac
 command -v systemctl >/dev/null || die "Нужен systemd"
 command -v sshd >/dev/null || die "Не найден sshd"
+# Ubuntu 24.04 запускает sshd через ssh.socket, и каталога /run/sshd может не быть.
+# Без него sshd -t и sshd -T падают с «Missing privilege separation directory».
+install -d -m 0755 /run/sshd
 if [ -f "$SSHD_DROPIN" ]; then
   warn "Похоже, скрипт уже запускался ($SSHD_DROPIN существует)."
   read -r -p "    Запустить заново поверх? [y/N] " a; [[ "${a,,}" == y* ]] || exit 1
@@ -272,6 +275,7 @@ if [ "$(cat "$B/fail2ban.service.active")" = active ]; then
 else
   systemctl stop fail2ban.service || rc=1
 fi
+install -d -m 0755 /run/sshd || rc=1
 if sshd -t; then
   systemctl daemon-reload || rc=1
   if [ "$(cat "$B/ssh-mode")" = socket ]; then

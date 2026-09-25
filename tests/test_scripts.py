@@ -147,6 +147,7 @@ for unit in ('ssh.service','ssh.socket','fail2ban.service'):
  (backup/(unit+'.enabled')).write_text('disabled\n' if unit=='ssh.socket' else 'enabled\n'); (backup/(unit+'.active')).write_text('active\n')
 (root/'var/lib/vps-harden/backup-path').write_text(str(backup)+'\n')
 reset_confirm(); r=run('vps-harden-rollback')
+check((root/'run/sshd').is_dir(),'rollback creates /run/sshd for sshd -t on Ubuntu 24.04 socket mode',r.stderr)
 check(r.returncode==0 and not pending.exists() and (root/'etc/default/ufw').read_text()==(backup/'ufw-default').read_text() and (root/'etc/ufw/user.rules').read_text()=='old firewall rules\n' and (root/'etc/ssh/sshd_config').read_text()=='Port 2222\n','restore SSH and full firewall files',r.stderr)
 reset_confirm(); r=run('vps-harden-rollback',extra={'FAIL_UFW':'1'}); check(r.returncode!=0 and pending.exists(),'rollback error remains retryable',r.stderr)
 # Distinguish absent service, disabled service, and inactive but enabled service.
