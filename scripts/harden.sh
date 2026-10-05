@@ -323,6 +323,7 @@ f2b_ready() { local i; for i in \$(seq 1 10); do fail2ban-client ping >/dev/null
 [ -f "$SSHD_DROPIN" ] || exit 1
 # Явное подтверждение после проверки НОВОГО SSH-входа.
 sed -i '/^Port 22\$/d' "$SSHD_DROPIN"
+install -d -m 0755 /run/sshd
 sshd -t
 systemctl reload ssh.service
 sleep 1
@@ -405,6 +406,9 @@ ClientAliveCountMax 2
 UseDNS no
 EOF
 chmod 644 "$SSHD_DROPIN"
+# full-upgrade на шаге 1 перезапускает ssh (needrestart), и systemd удаляет /run/sshd
+# вместе со службой. Создаём каталог заново прямо перед проверками.
+install -d -m 0755 /run/sshd
 EFFECTIVE=$(sshd -T -C "user=$NEW_USER,host=localhost,addr=127.0.0.1")
 for expected in "permitrootlogin no" "passwordauthentication no" "kbdinteractiveauthentication no" "pubkeyauthentication yes" "authenticationmethods publickey" "allowusers $NEW_USER"; do
   printf '%s\n' "$EFFECTIVE" | grep -Fx "$expected" >/dev/null || die "Конфликт настроек SSH: ожидалось $expected"

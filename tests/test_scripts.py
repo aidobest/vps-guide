@@ -138,6 +138,9 @@ for fail in ('FAIL_SSH','FAIL_UFW'):
  check(r.returncode!=0 and pending.exists() and 'disable --now vps-harden-rollback.timer' not in log.read_text(),'confirmation failure keeps timer '+fail,r.stderr)
 reset_confirm(); r=run('vps-confirm',extra={'FAIL_F2B':'1'}); check(r.returncode==0 and not pending.exists() and 'ВНИМАНИЕ' in r.stderr,'fail2ban warning permits SSH confirmation',repr((r.returncode,r.stdout,r.stderr,log.read_text())))
 reset_confirm(); r=run('vps-confirm'); check(r.returncode==0 and not pending.exists(),'successful confirmation',r.stderr)
+reset_confirm(); (root/'run/sshd').exists() and (root/'run/sshd').rmdir(); r=run('vps-confirm'); check(r.returncode==0 and (root/'run/sshd').is_dir(),'confirm recreates /run/sshd before sshd -t',r.stderr)
+# После full-upgrade (needrestart перезапускает ssh) /run/sshd пропадает: шаг 4 создаёт его перед sshd -T.
+s4=h[h.index('step "4/9'):]; check(s4.index('install -d -m 0755 /run/sshd')<s4.index('sshd -T'),'step 4 recreates /run/sshd after upgrade')
 # Real file copies/restoration; service responses are mocks.
 backup=root/'root/vps-harden-backup.TEST'; backup.mkdir(exist_ok=True)
 (backup/'sshd_config').write_text('Port 2222\n'); (backup/'sshd_config.d').mkdir(exist_ok=True); (backup/'sshd_config.d/old.conf').write_text('PermitRootLogin yes\n')
