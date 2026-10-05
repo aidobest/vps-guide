@@ -36,7 +36,7 @@
 Под root на сервере:
 
 ```
-curl -fsSL https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/scripts/harden.sh -o harden.sh
+curl -fsSL https://raw.githubusercontent.com/aidobest/vps-guide/v0.4/scripts/harden.sh -o harden.sh
 bash harden.sh
 ```
 
@@ -49,7 +49,7 @@ bash harden.sh
 Под своим пользователем (не root) на сервере:
 
 ```
-curl -fsSL https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/scripts/vpn-setup.sh -o vpn-setup.sh
+curl -fsSL https://raw.githubusercontent.com/aidobest/vps-guide/v0.4/scripts/vpn-setup.sh -o vpn-setup.sh
 sudo bash vpn-setup.sh
 ```
 
@@ -65,20 +65,20 @@ sudo bash vpn-setup.sh
 
 | Страна | Адрес файла |
 |---|---|
-| Азербайджан | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-az.conf` |
-| Армения | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-am.conf` |
-| Германия | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-de.conf` |
-| Грузия | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-ge.conf` |
-| Израиль | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-il.conf` |
-| Казахстан | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-kz.conf` |
-| Кипр | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-cy.conf` |
-| Кыргызстан | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-kg.conf` |
-| Россия | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-ru.conf` |
-| Сербия | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-rs.conf` |
-| Таиланд | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-th.conf` |
-| Турция | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-tr.conf` |
-| Узбекистан | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-uz.conf` |
-| Без разделения, всё через сервер | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.3/client-configs/shadowrocket-all.conf` |
+| Азербайджан | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.4/client-configs/shadowrocket-az.conf` |
+| Армения | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.4/client-configs/shadowrocket-am.conf` |
+| Германия | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.4/client-configs/shadowrocket-de.conf` |
+| Грузия | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.4/client-configs/shadowrocket-ge.conf` |
+| Израиль | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.4/client-configs/shadowrocket-il.conf` |
+| Казахстан | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.4/client-configs/shadowrocket-kz.conf` |
+| Кипр | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.4/client-configs/shadowrocket-cy.conf` |
+| Кыргызстан | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.4/client-configs/shadowrocket-kg.conf` |
+| Россия | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.4/client-configs/shadowrocket-ru.conf` |
+| Сербия | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.4/client-configs/shadowrocket-rs.conf` |
+| Таиланд | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.4/client-configs/shadowrocket-th.conf` |
+| Турция | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.4/client-configs/shadowrocket-tr.conf` |
+| Узбекистан | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.4/client-configs/shadowrocket-uz.conf` |
+| Без разделения, всё через сервер | `https://raw.githubusercontent.com/aidobest/vps-guide/v0.4/client-configs/shadowrocket-all.conf` |
 
 В каждом файле национальные домены страны и её адреса по базе GeoIP. В некоторых файлах дополнительно крупные местные сервисы на зарубежных доменах. Файлы собирает `client-configs/make-configs.py`.
 
